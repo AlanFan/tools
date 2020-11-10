@@ -67,8 +67,8 @@ cd $DIR
 eval "oc get packagemanifests $PACKAGE -o go-template='{{range .status.channels}}{{if eq .name \"$CHANNEL\" }}{{range .currentCSVDesc.relatedImages}}{{.}}{{\"\\n\"}}{{end}}{{end}}{{end}}'" > images
 echo -e "\n********** 2. Get bundle image **********"
 #Get bundle image
-podman pull $(oc get catalogsource $CATALOGSOURCE -o json | jq -r .spec.image)
-podman run -p50051:50051 --name=tmp -d --rm $(oc get catalogsource $CATALOGSOURCE -o json | jq -r .spec.image) > /dev/null
+podman pull --authfile $AUTH $(oc get catalogsource $CATALOGSOURCE -n openshift-marketplace -o json | jq -r .spec.image)
+podman run -p50051:50051 --name=tmp -d --rm $(oc get catalogsource $CATALOGSOURCE  -n openshift-marketplace -o json | jq -r .spec.image) > /dev/null
 sleep 3
 eval "grpcurl -plaintext -d '{\"pkgName\":\"$PACKAGE\",\"channelName\":\"$CHANNEL\"}' localhost:50051 api.Registry/GetBundleForChannel | jq -r .bundlePath >> images"
 podman stop tmp > /dev/null
